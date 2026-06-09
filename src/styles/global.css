@@ -35,7 +35,23 @@ nav.scrolled{background:rgba(10,15,29,.78);backdrop-filter:blur(14px);border-bot
 .lang-switch a.active{background:var(--blue);color:#fff}
 .nav-cta{border:1px solid var(--line-strong);color:var(--text)!important;padding:.5rem 1rem;border-radius:100px;transition:border-color .25s,background .25s}
 .nav-cta:hover{border-color:var(--blue);background:var(--blue-dim)}
-@media(max-width:1040px){.nav-links{display:none}}
+/* Botón hamburguesa (oculto en escritorio) */
+.nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;padding:0;background:none;border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:border-color .25s}
+.nav-toggle:hover{border-color:var(--blue)}
+.nav-toggle span{display:block;width:18px;height:2px;margin:0 auto;background:var(--text);border-radius:2px;transition:transform .3s,opacity .25s}
+.nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-toggle.open span:nth-child(2){opacity:0}
+.nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+/* Panel desplegable (solo móvil) */
+.mobile-menu{display:none;position:fixed;top:63px;left:0;right:0;z-index:99;flex-direction:column;background:rgba(10,15,29,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:.4rem clamp(1.2rem,5vw,3rem) 1.1rem;opacity:0;transform:translateY(-12px);pointer-events:none;transition:opacity .28s ease,transform .28s ease}
+.mobile-menu.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.mobile-menu a{color:var(--text);text-decoration:none;font-size:1.02rem;font-weight:500;padding:.9rem 0;border-bottom:1px solid var(--line)}
+.mobile-menu a:last-child{border-bottom:none}
+@media(max-width:1040px){
+  .nav-links{display:none}
+  .nav-toggle{display:flex}
+  .mobile-menu{display:flex}
+}
 
 /* HERO */
 header{min-height:100vh;display:flex;align-items:center;padding-top:6rem;padding-bottom:4rem}

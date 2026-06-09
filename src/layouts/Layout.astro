@@ -74,8 +74,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://reiderer.co
         <a href={esHref} class={lang === 'es' ? 'active' : ''}>ES</a>
         <a href={enHref} class={lang === 'en' ? 'active' : ''}>EN</a>
       </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Menú" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href={`${home}#sobre`}>{t.nav.about}</a>
+    <a href={`${home}#proyectos`}>{t.nav.projects}</a>
+    <a href={blogHref}>{t.nav.blog}</a>
+    <a href={`${home}#trayectoria`}>{t.nav.experience}</a>
+    <a href={`${home}#contacto`}>{t.nav.contact}</a>
+  </div>
 
   <main>
     <slot />
@@ -90,6 +101,21 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://reiderer.co
       es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
     }, { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+    const navToggle = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (navToggle && mobileMenu) {
+      navToggle.addEventListener('click', () => {
+        const open = navToggle.classList.toggle('open');
+        mobileMenu.classList.toggle('open', open);
+        navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      mobileMenu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => {
+        navToggle.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      }));
+    }
   </script>
 </body>
 </html>
