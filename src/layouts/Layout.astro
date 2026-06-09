@@ -1,0 +1,95 @@
+---
+import '../styles/global.css';
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+  title?: string;
+  description?: string;
+  /** Ruta equivalente en el otro idioma (para el selector). */
+  altHref: string;
+}
+
+const { lang, title, description, altHref } = Astro.props;
+const t = content[lang];
+const home = lang === 'es' ? '/' : '/en';
+const blogHref = lang === 'es' ? '/blog' : '/en/blog';
+const esHref = lang === 'es' ? home : altHref;
+const enHref = lang === 'en' ? home : altHref;
+
+const pageTitle = title ?? t.meta.title;
+const pageDesc = description ?? t.meta.description;
+// Imagen de compartir (Open Graph). Pon tu poster en public/og.jpg
+const ogImage = new URL('/og.jpg', Astro.site ?? 'https://reiderer.com').href;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://reiderer.com').href;
+---
+<!DOCTYPE html>
+<html lang={lang}>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDesc} />
+  <meta name="author" content="Juan Rodríguez Castellano" />
+  <link rel="canonical" href={canonical} />
+  <link rel="icon" href="/favicon.svg" />
+
+  <!-- Open Graph (LinkedIn, Facebook, WhatsApp...) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="reiderer" />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={pageDesc} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'en_US'} />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={pageDesc} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav id="nav">
+    <a class="brand" href={home} aria-label="reiderer">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 3 L28 9.5 V22.5 L16 29 L4 22.5 V9.5 Z" fill="none" stroke="#3b82c4" stroke-width="1.8"/>
+        <path d="M12 11 l5 5 l-5 5" fill="none" stroke="#e2453f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="word">reiderer<span class="cursor">_</span></span>
+    </a>
+    <div class="nav-right">
+      <ul class="nav-links">
+        <li><a href={`${home}#sobre`}>{t.nav.about}</a></li>
+        <li><a href={`${home}#proyectos`}>{t.nav.projects}</a></li>
+        <li><a href={blogHref}>{t.nav.blog}</a></li>
+        <li><a href={`${home}#trayectoria`}>{t.nav.experience}</a></li>
+        <li><a class="nav-cta" href={`${home}#contacto`}>{t.nav.contact}</a></li>
+      </ul>
+      <div class="lang-switch">
+        <a href={esHref} class={lang === 'es' ? 'active' : ''}>ES</a>
+        <a href={enHref} class={lang === 'en' ? 'active' : ''}>EN</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer>reiderer<span class="c">_</span> · Córdoba, Andalucía · <span class="c">&copy;</span> 2026 Juan Rodríguez Castellano</footer>
+
+  <script is:inline>
+    const nav = document.getElementById('nav');
+    addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 40));
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  </script>
+</body>
+</html>

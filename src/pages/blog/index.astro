@@ -1,0 +1,34 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { content } from '../../i18n/content';
+
+const t = content.es;
+const posts = (await getCollection('blog', (p) => p.data.lang === 'es'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b');
+---
+<Layout lang="es" altHref="/en/blog" title={`Blog · ${t.meta.title}`}>
+  <section class="wrap" style="padding-top:8rem">
+    <div class="section-tag">{t.blogSection.tag}</div>
+    <h2>{t.blogSection.title}</h2>
+    <p class="lead">{t.blogSection.lead}</p>
+    {posts.length > 0 ? (
+      <div class="blog-grid">
+        {posts.map((p) => (
+          <a class="post" href={`/blog/${p.slug}`}>
+            <span class={`cat ${catClass(p.data.accent)}`}>{p.data.category}</span>
+            <h3>{p.data.title}</h3>
+            <p>{p.data.description}</p>
+            <div class="meta">
+              <span>{p.data.pubDate.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+              <span class="go">{t.blogSection.read}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="lead">{t.blogSection.empty}</p>
+    )}
+  </section>
+</Layout>

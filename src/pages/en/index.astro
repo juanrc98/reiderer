@@ -1,0 +1,20 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Home from '../../components/Home.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', (p) => p.data.lang === 'en'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 4)
+  .map((p) => ({
+    url: `/en/blog/${p.slug}`,
+    title: p.data.title,
+    description: p.data.description,
+    category: p.data.category,
+    accent: p.data.accent,
+    date: p.data.pubDate.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' }),
+  }));
+---
+<Layout lang="en" altHref="/">
+  <Home lang="en" posts={posts} />
+</Layout>

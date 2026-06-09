@@ -1,0 +1,203 @@
+---
+import { content, type Lang } from '../i18n/content';
+
+interface PostPreview {
+  url: string;
+  title: string;
+  description: string;
+  category: string;
+  accent: 'blue' | 'red' | 'neutral';
+  date: string;
+}
+
+interface Props {
+  lang: Lang;
+  posts: PostPreview[];
+}
+
+const { lang, posts } = Astro.props;
+const t = content[lang];
+const blogHref = lang === 'es' ? '/blog' : '/en/blog';
+const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b');
+---
+
+<header id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="tagpill reveal"><span class="sq"></span><span class="sq2"></span>{t.hero.pill}</span>
+        <p class="eyebrow reveal d1">{t.hero.eyebrow}</p>
+        <h1 class="reveal d1">{t.hero.h1pre}<em>{t.hero.h1em}</em></h1>
+        <p class="hero-role reveal d1">{t.hero.role} <b>{t.hero.roleAccent}</b></p>
+        <p class="hero-sub reveal d2">{t.hero.sub}</p>
+        <div class="hero-tags reveal d2">
+          {t.hero.tags.map((tag) => <span>{tag}</span>)}
+        </div>
+        <div class="hero-actions reveal d3">
+          <a href="#proyectos" class="btn btn-primary">{t.hero.ctaProjects}</a>
+          <a href={blogHref} class="btn btn-ghost">{t.hero.ctaBlog}</a>
+          <a href="https://github.com/juanrc98" target="_blank" rel="noopener" class="btn btn-ghost">{t.hero.ctaGithub}</a>
+        </div>
+      </div>
+      <div class="hero-panel reveal d2">
+        <div class="hp-photo">
+          <img src="/JRC.jpg" alt="Juan Rodríguez Castellano" style="width:100%;height:100%;object-fit:cover" />
+        </div>
+        <div class="hp-id">
+          <svg class="shield" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+          <div>
+            <div class="name">Juan Rodríguez Castellano</div>
+            <div class="sub">{t.hero.location}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="sobre">
+  <div class="wrap about-grid">
+    <div>
+      <div class="section-tag reveal">{t.about.tag}</div>
+      <h2 class="reveal d1">{t.about.title}<em>{t.about.titleEm}</em></h2>
+    </div>
+    <div class="about-text reveal d1">
+      {t.about.paragraphs.map((p) => <p set:html={p}></p>)}
+      <div class="skills">
+        {t.about.skills.map((s) => <span class="chip">{s}</span>)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="proyectos">
+  <div class="wrap">
+    <div class="section-tag reveal">{t.projects.tag}</div>
+    <h2 class="reveal d1">{t.projects.title}<em>{t.projects.titleEm}</em></h2>
+    <p class="lead reveal d1">{t.projects.lead}</p>
+    {t.projects.groups.map((g) => (
+      <div class={`proj-group ${g.accent}`}>
+        <div class="proj-group-title reveal"><span class="bar"></span>{g.title}</div>
+        <div class="cards">
+          {g.cards.map((c: any) => (
+            <div class={`card${c.red ? ' red' : ''}${c.future ? ' future ' + c.future : ''} reveal`}>
+              {c.label && <span class={`label${c.labelHot ? ' hot' : ''}`}>{c.label}</span>}
+              <h3>{c.title}</h3>
+              <p>{c.desc}</p>
+              <div class="tags">{c.tags.map((tg: string) => <span>{tg}</span>)}</div>
+              {c.href && <a href={c.href} target="_blank" rel="noopener">{c.link}</a>}
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<section id="blog">
+  <div class="wrap">
+    <div class="section-tag reveal">{t.blogSection.tag}</div>
+    <h2 class="reveal d1">{t.blogSection.title}</h2>
+    <p class="lead reveal d1">{t.blogSection.lead}</p>
+    {posts.length > 0 ? (
+      <div class="blog-grid">
+        {posts.map((p) => (
+          <a class="post reveal d1" href={p.url}>
+            <span class={`cat ${catClass(p.accent)}`}>{p.category}</span>
+            <h3>{p.title}</h3>
+            <p>{p.description}</p>
+            <div class="meta"><span>{p.date}</span><span class="go">{t.blogSection.read}</span></div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="lead">{t.blogSection.empty}</p>
+    )}
+    <div class="blog-more">
+      <a href={blogHref} class="btn btn-ghost">{t.blogSection.readMore}</a>
+    </div>
+  </div>
+</section>
+
+<section id="metodo">
+  <div class="wrap">
+    <div class="section-tag reveal">{t.method.tag}</div>
+    <h2 class="reveal d1">{t.method.title}<em>{t.method.titleEm}</em></h2>
+    <p class="lead reveal d1">{t.method.lead}</p>
+    <div class="method-grid">
+      {t.method.items.map((m) => (
+        <div class="method reveal"><div class="num">{m.n}</div><h3>{m.h}</h3><p>{m.p}</p></div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section id="trayectoria">
+  <div class="wrap">
+    <div class="section-tag reveal">{t.experience.tag}</div>
+    <h2 class="reveal d1">{t.experience.title}</h2>
+    <div class="timeline">
+      {t.experience.items.map((e) => (
+        <div class="tl-item reveal">
+          <div class="tl-when">{e.when}</div>
+          <div class="tl-role">{e.role}</div>
+          <div class="tl-org">{e.org}</div>
+          <div class="tl-desc">{e.desc}<span class="stack">{e.stack}</span></div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section id="certs">
+  <div class="wrap">
+    <div class="section-tag reveal">{t.certs.tag}</div>
+    <h2 class="reveal d1">{t.certs.title}</h2>
+    <p class="lead reveal d1">{t.certs.lead}</p>
+    <div class="cert-grid">
+      {t.certs.items.map((c: any) => (
+        <div class="cert reveal">
+          <div class="badge">{c.badge}</div>
+          <h4>{c.name}</h4>
+          <div class="iss">{c.iss}</div>
+          {c.href && <a class="verify" href={c.href} target="_blank" rel="noopener">{t.certs.verify}</a>}
+        </div>
+      ))}
+    </div>
+    <p class="cert-more reveal" set:html={t.certs.more}></p>
+  </div>
+</section>
+
+<section id="recomendaciones">
+  <div class="wrap">
+    <div class="section-tag reveal">{t.recs.tag}</div>
+    <h2 class="reveal d1">{t.recs.title}</h2>
+    <div class="recs">
+      {t.recs.items.map((r) => (
+        <div class="rec reveal">
+          <p>{r.text}</p>
+          <div class="who">{r.who}<span>{r.role}</span></div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section id="contacto">
+  <div class="wrap">
+    <div class="contact reveal">
+      <div class="section-tag" style="justify-content:center">{t.contact.tag}</div>
+      <h2>{t.contact.title}<em>{t.contact.titleEm}</em></h2>
+      <p>{t.contact.text}</p>
+      <div class="cta-row">
+        <a href="mailto:juanrodcas98@gmail.com" class="btn btn-primary">{t.contact.cta}</a>
+        <a href="https://juanrc98.github.io/CV_JuanRodriguezCastellano.pdf" target="_blank" rel="noopener" class="btn btn-ghost">{t.contact.cv}</a>
+      </div>
+      <div class="contact-links">
+        <a href="mailto:juanrodcas98@gmail.com">juanrodcas98@gmail.com</a>
+        <a href="https://www.linkedin.com/in/juan-rodriguez-castellano/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://github.com/juanrc98" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
