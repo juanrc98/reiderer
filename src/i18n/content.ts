@@ -106,7 +106,7 @@ export const content = {
       tag: 'trayectoria',
       title: 'Experiencia',
       items: [
-        { when: 'mar. 2026 — actualidad · Córdoba · Presencial', role: 'Técnico de Soporte TI — Migración Microsoft 365', org: 'ECOINTEGRAL INGENIERÍA, SL (vía GI Group)', desc: 'Despliegue y migración de más de 230 endpoints Windows a Microsoft 365, dentro de la integración en Bureau Veritas. Windows Autopilot, identidades en Entra ID, políticas de cumplimiento y soporte a usuarios.', stack: 'Windows 11 · Autopilot · Entra ID · Microsoft 365 · Intune' },
+        { when: 'mar. 2026 — may. 2026 · Córdoba · Presencial', role: 'Técnico de Soporte TI — Migración Microsoft 365', org: 'ECOINTEGRAL INGENIERÍA, SL (vía GI Group)', desc: 'Despliegue y migración de más de 230 endpoints Windows a Microsoft 365, dentro de la integración en Bureau Veritas. Windows Autopilot, identidades en Entra ID, políticas de cumplimiento y soporte a usuarios.', stack: 'Windows 11 · Autopilot · Entra ID · Microsoft 365 · Intune' },
         { when: 'oct. 2025 — dic. 2025 · Córdoba · Presencial', role: 'Técnico Informático', org: 'Fersoft Informática', desc: 'Soporte e implantación de software de gestión en pymes (proyecto Verifactu). SQL Server, software de facturación y soporte presencial y remoto a usuarios.', stack: 'Windows · SQL Server · Soporte remoto' },
         { when: 'mar. 2025 — jun. 2025 · Córdoba · Híbrido', role: 'Analista de Ciberseguridad — SOC N1', org: 'IaaS365 · Prácticas', desc: 'SOC 24/7 multicliente: monitorización, triaje y escalado de alertas. SIEM (LogPoint, Wazuh) y EDR/XDR (Vision One, Cynet), IOCs y MITRE ATT&CK, escaneos con Nessus/OpenVAS, phishing con GoPhish y auditorías ENS.', stack: 'LogPoint · Wazuh · Vision One · Cynet · MITRE ATT&CK · ENS' },
       ],
@@ -120,9 +120,9 @@ export const content = {
         { badge: 'eLearnSecurity · INE', name: 'eJPTv2', iss: 'Junior Penetration Tester · dic. 2025', href: 'https://certs.ine.com/e9a35620-16fe-47f8-b9d2-a25223872fc6' },
         { badge: 'CompTIA · SY0-701', name: 'Security+ (ce)', iss: 'nov. 2025 → nov. 2028', href: 'https://www.credly.com/badges/ad3204d9-e927-4383-8dc3-4a181659a195/linked_in_profile' },
         { badge: 'Google · Coursera', name: 'Google Cybersecurity', iss: 'Professional Certificate', href: 'https://www.coursera.org/account/accomplishments/professional-cert/certificate/Z3GIB12XPAFV' },
-        { badge: 'Microsoft', name: 'SC-200', iss: 'Security Operations Analyst · en preparación' },
+        { badge: 'Microsoft', name: 'MD-102', iss: 'Endpoint Administrator · en preparación' },
       ],
-      more: 'Y más formación en hacking ético, análisis de malware y ciberseguridad OT. <strong>En el horizonte: SC-200, AZ-104, AZ-500 y OSCP.</strong>',
+      more: 'Y más formación en hacking ético, análisis de malware y ciberseguridad OT. <strong>En el horizonte: AZ-104, AZ-500 y OSCP.</strong>',
     },
     recs: {
       tag: 'lo que dicen de mí',
@@ -244,7 +244,7 @@ export const content = {
       tag: 'experience',
       title: 'Experience',
       items: [
-        { when: 'Mar 2026 — present · Córdoba · On-site', role: 'IT Support Technician — Microsoft 365 Migration', org: 'ECOINTEGRAL INGENIERÍA, SL (via GI Group)', desc: 'Deployment and migration of 230+ Windows endpoints to Microsoft 365, within the integration into Bureau Veritas. Windows Autopilot, identities in Entra ID, compliance policies and user support.', stack: 'Windows 11 · Autopilot · Entra ID · Microsoft 365 · Intune' },
+        { when: 'Mar 2026 — May 2026 · Córdoba · On-site', role: 'IT Support Technician — Microsoft 365 Migration', org: 'ECOINTEGRAL INGENIERÍA, SL (via GI Group)', desc: 'Deployment and migration of 230+ Windows endpoints to Microsoft 365, within the integration into Bureau Veritas. Windows Autopilot, identities in Entra ID, compliance policies and user support.', stack: 'Windows 11 · Autopilot · Entra ID · Microsoft 365 · Intune' },
         { when: 'Oct 2025 — Dec 2025 · Córdoba · On-site', role: 'IT Technician', org: 'Fersoft Informática', desc: 'Support and rollout of business management software in SMBs (Verifactu project). SQL Server, billing software and on-site and remote user support.', stack: 'Windows · SQL Server · Remote support' },
         { when: 'Mar 2025 — Jun 2025 · Córdoba · Hybrid', role: 'Cybersecurity Analyst — SOC N1', org: 'IaaS365 · Internship', desc: '24/7 multi-client SOC: monitoring, triage and alert escalation. SIEM (LogPoint, Wazuh) and EDR/XDR (Vision One, Cynet), IOCs and MITRE ATT&CK, Nessus/OpenVAS scans, GoPhish phishing and ENS audits.', stack: 'LogPoint · Wazuh · Vision One · Cynet · MITRE ATT&CK · ENS' },
       ],
@@ -258,9 +258,9 @@ export const content = {
         { badge: 'eLearnSecurity · INE', name: 'eJPTv2', iss: 'Junior Penetration Tester · Dec 2025', href: 'https://certs.ine.com/e9a35620-16fe-47f8-b9d2-a25223872fc6' },
         { badge: 'CompTIA · SY0-701', name: 'Security+ (ce)', iss: 'Nov 2025 → Nov 2028', href: 'https://www.credly.com/badges/ad3204d9-e927-4383-8dc3-4a181659a195/linked_in_profile' },
         { badge: 'Google · Coursera', name: 'Google Cybersecurity', iss: 'Professional Certificate', href: 'https://www.coursera.org/account/accomplishments/professional-cert/certificate/Z3GIB12XPAFV' },
-        { badge: 'Microsoft', name: 'SC-200', iss: 'Security Operations Analyst · in progress' },
+        { badge: 'Microsoft', name: 'MD-102', iss: 'Endpoint Administrator · in progress' },
       ],
-      more: 'Plus more training in ethical hacking, malware analysis and OT security. <strong>On the horizon: SC-200, AZ-104, AZ-500 and OSCP.</strong>',
+      more: 'Plus more training in ethical hacking, malware analysis and OT security. <strong>On the horizon: AZ-104, AZ-500 and OSCP.</strong>',
     },
     recs: {
       tag: 'what they say about me',
