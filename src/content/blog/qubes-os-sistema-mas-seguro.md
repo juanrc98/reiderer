@@ -6,6 +6,7 @@ lang: 'es'
 category: 'Seguridad'
 accent: 'blue'
 tags: ['QubesOS', 'Seguridad', 'Aislamiento', 'Linux']
+translationKey: 'qubes-os'
 ---
 
 Cada vez que se habla del "sistema operativo más seguro del mundo" acaba saliendo el mismo nombre: **QubesOS**. Me picó la curiosidad y me puse a investigarlo en serio, porque una etiqueta así pide que la mires de cerca antes de creértela. Esto es lo que he aprendido.

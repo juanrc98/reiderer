@@ -33,6 +33,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://reiderer.co
   <meta name="author" content="Juan Rodríguez Castellano" />
   <link rel="canonical" href={canonical} />
   <link rel="icon" href="/favicon.svg" />
+  <link rel="alternate" type="application/rss+xml" title="reiderer · Blog" href={lang === 'es' ? '/rss.xml' : '/en/rss.xml'} />
 
   <!-- Open Graph (LinkedIn, Facebook, WhatsApp...) -->
   <meta property="og:type" content="website" />

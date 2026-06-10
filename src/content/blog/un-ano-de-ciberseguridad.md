@@ -6,6 +6,7 @@ lang: 'es'
 category: 'Reflexión'
 accent: 'neutral'
 tags: ['SOC', 'aprendizaje', 'SIEM']
+translationKey: 'one-year'
 ---
 
 Hace poco más de un año no sabía qué era un SIEM. Hoy he pasado cientos de horas investigando alertas, analizando eventos y afinando reglas de detección.
@@ -19,4 +20,4 @@ Todo empezó por curiosidad, con un curso de hacking ético, sin una hoja de rut
 
 Pero si algo he aprendido es que la ciberseguridad **no consiste en tener más herramientas, más alertas o más dashboards**. Consiste en distinguir lo importante del ruido.
 
-Esa capacidad de análisis y priorización es, probablemente, el aprendizaje más valioso que me llevo de esta etapa. El siguiente objetivo está claro: la SC-200 y seguir creciendo, sin soltar nunca mi parte de sistemas.
+Esa capacidad de análisis y priorización es, probablemente, el aprendizaje más valioso que me llevo de esta etapa. El siguiente objetivo está claro: seguir especializándome en seguridad de identidad y cloud en Azure, sin soltar nunca mi parte de sistemas.

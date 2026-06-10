@@ -6,6 +6,7 @@ lang: 'en'
 category: 'Security'
 accent: 'blue'
 tags: ['QubesOS', 'Security', 'Isolation', 'Linux']
+translationKey: 'qubes-os'
 ---
 
 Whenever people talk about the "most secure operating system in the world", the same name comes up: **QubesOS**. It got me curious enough to dig in properly, because a label like that deserves a closer look before you believe it. Here's what I learned.

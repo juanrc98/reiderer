@@ -6,6 +6,7 @@ lang: 'en'
 category: 'Reflection'
 accent: 'neutral'
 tags: ['SOC', 'learning', 'SIEM']
+translationKey: 'one-year'
 ---
 
 Just over a year ago I didn’t know what a SIEM was. Today I’ve spent hundreds of hours investigating alerts, analyzing events and tuning detection rules.
@@ -19,4 +20,4 @@ It all started out of curiosity, with an ethical hacking course, without a clear
 
 But if there’s one thing I’ve learned, it’s that cybersecurity **isn’t about having more tools, more alerts or more dashboards**. It’s about telling signal from noise.
 
-That ability to analyze and prioritize is probably the most valuable lesson from this stage. The next goal is clear: the SC-200, and to keep growing without ever letting go of my systems side.
+That ability to analyze and prioritize is probably the most valuable lesson from this stage. The next goal is clear: keep specializing in identity and cloud security in Azure, without ever letting go of my systems side.

@@ -10,8 +10,15 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 const date = entry.data.pubDate.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+// Si existe la versión EN de este post (misma translationKey), el selector de idioma lleva a ella.
+let altHref = '/en/blog';
+if (entry.data.translationKey) {
+  const twin = await getCollection('blog', (p) => p.data.lang === 'en' && p.data.translationKey === entry.data.translationKey);
+  if (twin.length > 0) altHref = `/en/blog/${twin[0].slug}`;
+}
 ---
-<Layout lang="es" altHref="/en/blog" title={`${entry.data.title} · reiderer`} description={entry.data.description}>
+<Layout lang="es" altHref={altHref} title={`${entry.data.title} · reiderer`} description={entry.data.description}>
   <article class="wrap article">
     <a class="back" href="/blog">← Blog</a>
     <span class="cat">{entry.data.category}</span>

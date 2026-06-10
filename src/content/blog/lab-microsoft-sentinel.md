@@ -5,10 +5,11 @@ pubDate: 2026-06-09
 lang: 'es'
 category: 'Blue Team'
 accent: 'blue'
-tags: ['Sentinel', 'KQL', 'Azure', 'MITREATTACK', 'SC200']
+tags: ['Sentinel', 'KQL', 'Azure', 'MITREATTACK', 'IdentitySecurity']
+translationKey: 'sentinel-lab'
 ---
 
-La mayoría de labs de ciberseguridad parecen demos. Yo quería justo lo contrario: montar un **SOC en miniatura pero de verdad**, de principio a fin, sobre Microsoft Sentinel en Azure. Aquí cuento cómo lo hice, qué decisiones tomé y qué aprendí. Es también parte de mi preparación para la **SC-200**.
+La mayoría de labs de ciberseguridad parecen demos. Yo quería justo lo contrario: montar un **SOC en miniatura pero de verdad**, de principio a fin, sobre Microsoft Sentinel en Azure. Aquí cuento cómo lo hice, qué decisiones tomé y qué aprendí. Es también parte de mi camino de especialización en seguridad de identidad y cloud en entornos Microsoft.
 
 Y la decisión más importante la tomé antes de tocar nada: en lugar de meter mil fuentes de datos para que pareciera completo, lo centré en **un solo dominio bien entendido: la identidad**. Porque la identidad es hoy el verdadero perímetro, y porque prefiero entender a fondo dos detecciones que coleccionar veinte que no sé ni por qué saltan.
 
@@ -53,7 +54,7 @@ Cuando empiezas en Blue Team es fácil pensar que esto va de tener más reglas, 
 
 Y algo que para mí no es opcional: **documentarlo todo**. En el repo está la arquitectura, las queries KQL, los exports JSON de las reglas, el playbook, el workbook, las capturas y hasta una retrospectiva de lecciones aprendidas. Una detección que no puedes revisar ni reproducir, no sirve.
 
-Esto cierra la primera fase del lab (v1.0). A partir de aquí lo iré ampliando con más fuentes y detecciones mientras sigo con la SC-200 (examen en julio de 2026).
+Esto cierra la primera fase del lab (v1.0). A partir de aquí lo iré ampliando con más fuentes y detecciones, mientras sigo profundizando en Microsoft Sentinel, Identity Security y Cloud Security en Azure.
 
 ---
 

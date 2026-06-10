@@ -11,6 +11,8 @@ const blog = defineCollection({
     // color del acento de marca: azul (defensa/sistemas), rojo (ofensiva), neutral
     accent: z.enum(['blue', 'red', 'neutral']).default('blue'),
     tags: z.array(z.string()).default([]),
+    // clave compartida entre la versión ES y EN del mismo post (para el selector de idioma)
+    translationKey: z.string().optional(),
   }),
 });
 

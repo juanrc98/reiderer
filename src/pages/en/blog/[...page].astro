@@ -1,0 +1,46 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { content } from '../../../i18n/content';
+
+export async function getStaticPaths({ paginate }) {
+  const posts = (await getCollection('blog', (p) => p.data.lang === 'en'))
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  return paginate(posts, { pageSize: 9 });
+}
+
+const { page } = Astro.props;
+const t = content.en;
+const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b');
+---
+<Layout lang="en" altHref="/blog" title={`Blog · ${t.meta.title}`}>
+  <section class="wrap" style="padding-top:8rem">
+    <div class="section-tag">{t.blogSection.tag}</div>
+    <h2>{t.blogSection.title}</h2>
+    <p class="lead">{t.blogSection.lead}</p>
+    {page.data.length > 0 ? (
+      <div class="blog-grid">
+        {page.data.map((p) => (
+          <a class="post" href={`/en/blog/${p.slug}`}>
+            <span class={`cat ${catClass(p.data.accent)}`}>{p.data.category}</span>
+            <h3>{p.data.title}</h3>
+            <p>{p.data.description}</p>
+            <div class="meta">
+              <span>{p.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+              <span class="go">{t.blogSection.read}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="lead">{t.blogSection.empty}</p>
+    )}
+    {page.lastPage > 1 && (
+      <nav class="pagination" aria-label="Blog pagination">
+        {page.url.prev ? <a href={page.url.prev}>{t.blogSection.newer}</a> : <span class="off">{t.blogSection.newer}</span>}
+        <span class="mono pg">{page.currentPage} / {page.lastPage}</span>
+        {page.url.next ? <a href={page.url.next}>{t.blogSection.older}</a> : <span class="off">{t.blogSection.older}</span>}
+      </nav>
+    )}
+  </section>
+</Layout>

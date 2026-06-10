@@ -6,6 +6,7 @@ lang: 'es'
 category: 'Sistemas'
 accent: 'blue'
 tags: ['Proxmox', 'Virtualización', 'Homelab', 'Sistemas']
+translationKey: 'vbox-proxmox'
 ---
 
 En el ciclo (ASIR) aprendí a virtualizar con **VirtualBox** y **VMware Workstation**. Levantaba máquinas en mi portátil, montaba labs, rompía cosas y las volvía a montar. Para aprender, perfectos. Pero al salir al mundo real me di cuenta de que ahí fuera casi nadie hablaba de eso: en empresas, en homelabs, en foros... el nombre que aparecía una y otra vez era **Proxmox**. Y me piqué por entender el porqué.

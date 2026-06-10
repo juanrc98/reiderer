@@ -88,6 +88,8 @@ export const content = {
       readMore: 'Ver todas las entradas →',
       empty: 'Pronto, las primeras entradas.',
       read: 'Leer →',
+      newer: '← Más recientes',
+      older: 'Anteriores →',
     },
     method: {
       tag: 'método',
@@ -226,6 +228,8 @@ export const content = {
       readMore: 'See all posts →',
       empty: 'First posts coming soon.',
       read: 'Read →',
+      newer: '← Newer',
+      older: 'Older →',
     },
     method: {
       tag: 'method',

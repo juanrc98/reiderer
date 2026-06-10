@@ -1,9 +1,10 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build
 export default defineConfig({
-  // Cambia esto por tu dominio cuando lo tengas (p. ej. https://reiderer.com)
   site: 'https://reiderer.dev',
+  integrations: [sitemap()],
   i18n: {
     defaultLocale: 'es',
     locales: ['es', 'en'],
