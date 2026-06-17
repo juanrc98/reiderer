@@ -4,6 +4,7 @@ description: "I turned the most repetitive tasks of an M365 migration into a Pow
 category: "Systems"
 accent: "blue"
 date: 2026-06-17
+lang: "en"
 ---
 
 During a real migration of 230+ endpoints to Microsoft 365, I noticed something: the tasks that came up most often weren't the hard ones. They were the **manual, error-prone ones**. Onboarding a user with their license and groups. Offboarding someone who's leaving without leaving half an account open. Knowing how many licenses we were paying for but not using, or who didn't have MFA.

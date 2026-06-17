@@ -4,6 +4,7 @@ description: "Convertí las tareas más repetitivas de una migración M365 en un
 category: "Sistemas"
 accent: "blue"
 date: 2026-06-17
+lang: "es"
 ---
 
 Durante una migración real de más de 230 endpoints a Microsoft 365 me di cuenta de algo: las tareas que más se repetían no eran las difíciles. Eran las **manuales y propensas a error**. Dar de alta a un usuario con su licencia y sus grupos. Dar de baja a alguien que se va sin dejarse media cuenta abierta. Saber cuántas licencias estábamos pagando sin usar, o quién no tenía MFA.
