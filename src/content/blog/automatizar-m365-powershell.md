@@ -3,7 +3,7 @@ title: "Automatizar el alta y baja de usuarios en Microsoft 365 con PowerShell"
 description: "Convertí las tareas más repetitivas de una migración M365 en un módulo de PowerShell con tests y CI. Esto es lo que monté y lo que aprendí por el camino."
 category: "Sistemas"
 accent: "blue"
-date: 2026-06-17
+pubDate: 2026-06-17
 lang: "es"
 ---
 

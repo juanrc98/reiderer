@@ -3,7 +3,7 @@ title: "Automating Microsoft 365 user onboarding and offboarding with PowerShell
 description: "I turned the most repetitive tasks of an M365 migration into a PowerShell module with tests and CI. Here's what I built and what I learned along the way."
 category: "Systems"
 accent: "blue"
-date: 2026-06-17
+pubDate: 2026-06-17
 lang: "en"
 ---
 
