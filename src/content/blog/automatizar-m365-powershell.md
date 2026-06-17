@@ -1,51 +1,32 @@
 ---
-title: "Automatizar el alta y baja de usuarios en Microsoft 365 con PowerShell"
-description: "Convertí las tareas más repetitivas de una migración M365 en un módulo de PowerShell con tests y CI. Esto es lo que monté y lo que aprendí por el camino."
-category: "Sistemas"
-accent: "blue"
+title: "Automatizar lo repetitivo: mi módulo de PowerShell para Microsoft 365"
+description: 'Me cansé de dar de alta y baja usuarios a mano en una migración a Microsoft 365, así que monté un módulo de PowerShell. Esto es lo que aprendí por el camino.'
 pubDate: 2026-06-17
-lang: "es"
+lang: 'es'
+category: 'Sistemas'
+accent: 'blue'
+tags: ['PowerShell', 'Microsoft 365', 'Entra ID', 'Microsoft Graph', 'Automatización']
+translationKey: 'm365-powershell'
 ---
 
-Durante una migración real de más de 230 endpoints a Microsoft 365 me di cuenta de algo: las tareas que más se repetían no eran las difíciles. Eran las **manuales y propensas a error**. Dar de alta a un usuario con su licencia y sus grupos. Dar de baja a alguien que se va sin dejarse media cuenta abierta. Saber cuántas licencias estábamos pagando sin usar, o quién no tenía MFA.
+En la migración a Microsoft 365 en la que estuve, lo que más se me quedó no fueron las cosas complicadas. Fueron las repetitivas. Dar de alta a alguien: crear la cuenta, asignar la licencia, meterlo en sus grupos. Y lo mismo al revés cuando alguien se iba. Una vez, y otra, y otra.
 
-Cada una de esas cosas, hecha a mano y por clics, son cinco minutos. Multiplicado por cientos de usuarios y repetido cada semana, son horas y, peor, son **fallos**: un grupo que se olvida, una sesión que no se revoca el día de la baja, una licencia que sigue costando dinero meses después de que alguien se fuera.
+Por separado, cada una son dos minutos y cuatro clics. El problema aparece cuando lo repites decenas de veces y con prisa: se te pasa un grupo, queda una licencia asignada que nadie quita y que sigue costando dinero, una cuenta que crees deshabilitada pero que conserva la sesión abierta. No es difícil. Es tedioso. Y lo tedioso es justo por donde se cuelan los fallos.
 
-Así que en vez de seguir acumulando scripts sueltos, decidí montar algo serio: un módulo de PowerShell.
+En algún momento me cansé de hacerlo a mano. No quería otro script suelto de los que terminas perdiendo en una carpeta, así que me senté a montar algo ordenado, que pudiera reutilizar y entender meses después: un módulo de PowerShell sobre Microsoft Graph.
 
-## Qué hace
+Hace lo que hacía yo, pero sin saltarse pasos. Da de alta usuarios con su licencia, sus grupos y su manager, y los da de baja como toca el día que se van: deshabilita la cuenta, cierra las sesiones, libera las licencias y los saca de los grupos. Y de camino le añadí los informes que siempre acababa sacando a mano: cuántas licencias estamos gastando, quién no tiene MFA, qué cuentas llevan meses sin que nadie entre.
 
-El módulo se apoya en **Microsoft Graph** y cubre las tareas del día a día:
+## Lo difícil no eran las funciones, eran las decisiones
 
-- **Alta de usuario** (`New-M365User`): crea la cuenta en Entra ID, le asigna licencia, lo mete en sus grupos y le pone manager.
-- **Baja de usuario** (`Disable-M365User`): deshabilita la cuenta, revoca sus sesiones, le quita las licencias y lo saca de los grupos.
-- **Reportes** de uso de licencias, estado de MFA y cuentas inactivas, para tener visibilidad sin llenar el entorno de dashboards.
+Montando esto me di cuenta de que la chicha no estaba en el código, sino en pequeñas decisiones. Que la baja revoque las sesiones y no solo apague la cuenta, porque una cuenta apagada con la sesión viva sigue siendo una puerta entornada. Que nada que toque cuentas se ejecute sin poder verlo antes con un `-WhatIf`. Que los secretos del tenant no entren jamás en el repositorio. Son detalles, pero son la diferencia entre un juguete y algo en lo que confiar un lunes por la mañana.
 
-## Las decisiones que me importaron
+También le puse tests. Podría habérmelos ahorrado —es un proyecto mío, nadie me los pide—, pero para mí son lo que separa un script de una herramienta. Y si quiero enseñar cómo trabajo, tienen que estar ahí.
 
-Más que las funciones en sí, lo interesante fue **cómo** las planteé.
+## Lo que me llevo
 
-**Seguridad por defecto.** La baja no se limita a deshabilitar la cuenta: revoca las sesiones activas (invalida los tokens) y libera las licencias. Una cuenta "deshabilitada" con sesiones vivas sigue siendo un riesgo. Y los reportes de MFA priorizan mostrarme primero los administradores sin MFA, porque ese es el hueco que de verdad duele.
+Esto conecta con algo que arrastro desde que ando entre sistemas y seguridad: la gracia no está en hacer más, sino en quitarte de encima lo que no necesita tu cabeza, para poder usarla donde sí hace falta. Automatizar el alta de un usuario no es el logro. El logro es no tener que volver a pensar en ella.
 
-**Nada se modifica a ciegas.** Todas las funciones que crean o cambian cuentas soportan `-WhatIf` y `-Confirm`. Antes de tocar producción puedo simular exactamente qué va a pasar:
+El código está en GitHub, con su README, sus ejemplos y sus tests: [M365-Admin-Toolkit](https://github.com/juanrc98/M365-Admin-Toolkit). Es solo el principio de una caja de herramientas que iré llenando; lo siguiente que tengo en la cabeza es el alta masiva desde un CSV y un informe de los equipos que llevan tiempo sin aparecer por Intune.
 
-```powershell
-New-M365User -DisplayName 'Ana López' -UserPrincipalName 'ana.lopez@contoso.com' `
-             -LicenseSkuPartNumber 'SPE_E3' -GroupId '1111-2222' -WhatIf
-```
-
-**Separación y limpieza.** Los helpers internos (conectar a Graph, resolver el ID de una licencia) viven aparte y no se exportan. Y la configuración real del tenant nunca entra en el repositorio: solo subo un ejemplo, el archivo real está ignorado por git.
-
-## Por qué le puse tests
-
-Aquí está lo que para mí marca la diferencia entre un script y una herramienta: **un laboratorio no está terminado sin pruebas**. Le añadí tests con Pester que usan *mocks* de los cmdlets de Graph, así que se ejecutan sin necesidad de un tenant ni conexión. Y un pipeline de CI en GitHub Actions que, en cada push, pasa el linter (PSScriptAnalyzer) y los tests.
-
-¿Es imprescindible para un módulo personal? No. ¿Es la forma en que se trabaja en un entorno real y lo que quiero demostrar que sé hacer? Sí.
-
-## La idea de fondo
-
-Si algo tengo claro, después de pasar por sistemas y por seguridad, es que el valor no está en hacer más cosas, sino en **quitarte de encima lo repetitivo para dedicar la cabeza a lo que de verdad importa**. Automatizar el alta de usuarios no es el objetivo; el objetivo es no tener que pensar en ello y poder centrarme en lo que sí necesita criterio.
-
-El código está en GitHub, con su README, sus ejemplos y sus tests: **[M365-Admin-Toolkit](https://github.com/juanrc98/M365-Admin-Toolkit)**. Es la base de una caja de herramientas que iré ampliando —lo siguiente, el alta masiva desde CSV y un informe de dispositivos Intune obsoletos—.
-
-Seguimos construyendo.
+Seguimos.

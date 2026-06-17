@@ -1,51 +1,32 @@
 ---
-title: "Automating Microsoft 365 user onboarding and offboarding with PowerShell"
-description: "I turned the most repetitive tasks of an M365 migration into a PowerShell module with tests and CI. Here's what I built and what I learned along the way."
-category: "Systems"
-accent: "blue"
+title: "Automating the repetitive stuff: my PowerShell module for Microsoft 365"
+description: 'I got tired of onboarding and offboarding users by hand during a Microsoft 365 migration, so I built a PowerShell module. Here is what I learned along the way.'
 pubDate: 2026-06-17
-lang: "en"
+lang: 'en'
+category: 'Systems'
+accent: 'blue'
+tags: ['PowerShell', 'Microsoft 365', 'Entra ID', 'Microsoft Graph', 'Automation']
+translationKey: 'm365-powershell'
 ---
 
-During a real migration of 230+ endpoints to Microsoft 365, I noticed something: the tasks that came up most often weren't the hard ones. They were the **manual, error-prone ones**. Onboarding a user with their license and groups. Offboarding someone who's leaving without leaving half an account open. Knowing how many licenses we were paying for but not using, or who didn't have MFA.
+On the Microsoft 365 migration I worked on, the thing that stuck with me wasn't the complicated stuff. It was the repetitive stuff. Onboarding someone: create the account, assign the license, add them to their groups. And the same in reverse when someone left. Again, and again, and again.
 
-Each of those, done by hand and by clicking, is five minutes. Multiplied across hundreds of users and repeated every week, it's hours and, worse, it's **mistakes**: a group that gets forgotten, a session that isn't revoked on the day someone leaves, a license that keeps costing money months after they're gone.
+On their own, each one is two minutes and four clicks. The problem shows up when you repeat it dozens of times in a hurry: you miss a group, a license stays assigned that nobody removes and keeps costing money, an account you think is disabled but that still has a live session. It isn't hard. It's tedious. And tedious is exactly where the mistakes slip in.
 
-So instead of piling up loose scripts, I decided to build something proper: a PowerShell module.
+At some point I got tired of doing it by hand. I didn't want yet another loose script, the kind you end up losing in a folder, so I sat down to build something tidy that I could reuse and still understand months later: a PowerShell module on top of Microsoft Graph.
 
-## What it does
+It does what I used to do, but without skipping steps. It onboards users with their license, groups and manager, and offboards them properly the day they leave: disables the account, kills the sessions, frees up the licenses and removes them from their groups. And along the way I added the reports I always ended up pulling by hand: how many licenses we're spending, who doesn't have MFA, which accounts have gone months without anyone signing in.
 
-The module is built on **Microsoft Graph** and covers the day-to-day tasks:
+## The hard part wasn't the functions, it was the decisions
 
-- **Onboarding** (`New-M365User`): creates the account in Entra ID, assigns a license, adds them to their groups and sets a manager.
-- **Offboarding** (`Disable-M365User`): disables the account, revokes its sessions, removes licenses and takes the user out of their groups.
-- **Reports** on license usage, MFA status and inactive accounts, for visibility without flooding the tenant with dashboards.
+Building this, I realized the meat wasn't in the code but in small decisions. That offboarding should revoke the sessions and not just switch the account off, because a switched-off account with a live session is still a door left ajar. That nothing touching accounts should run without me being able to see it first with a `-WhatIf`. That the tenant secrets should never end up in the repo. Small things, but the difference between a toy and something you'd trust on a Monday morning.
 
-## The decisions that mattered
+I also added tests. I could have skipped them —it's my own project, nobody's asking for them— but to me they're what separates a script from a tool. And if I want to show how I work, they have to be there.
 
-More than the functions themselves, the interesting part was **how** I approached them.
+## What I take from this
 
-**Secure by default.** Offboarding doesn't just disable the account: it revokes active sessions (invalidates the tokens) and frees up the licenses. A "disabled" account with live sessions is still a risk. And the MFA report prioritizes showing me the administrators without MFA first, because that's the gap that really hurts.
+This ties into something I've carried since I started living between systems and security: the point isn't to do more, it's to get off your plate the stuff that doesn't need your head, so you can use it where it actually matters. Automating a user's onboarding isn't the achievement. The achievement is never having to think about it again.
 
-**Nothing changes blindly.** Every function that creates or changes accounts supports `-WhatIf` and `-Confirm`. Before touching production I can simulate exactly what's going to happen:
+The code is on GitHub, with its README, examples and tests: [M365-Admin-Toolkit](https://github.com/juanrc98/M365-Admin-Toolkit). It's just the start of a toolbox I'll keep filling; next on my mind is bulk onboarding from a CSV and a report of the devices that haven't shown up in Intune for a while.
 
-```powershell
-New-M365User -DisplayName 'Ana López' -UserPrincipalName 'ana.lopez@contoso.com' `
-             -LicenseSkuPartNumber 'SPE_E3' -GroupId '1111-2222' -WhatIf
-```
-
-**Separation and cleanliness.** Internal helpers (connecting to Graph, resolving a license ID) live apart and aren't exported. And the real tenant configuration never makes it into the repo: I only commit an example; the real file is git-ignored.
-
-## Why I added tests
-
-This is what, to me, separates a script from a tool: **a lab isn't finished without tests**. I added Pester tests that use *mocks* of the Graph cmdlets, so they run without a tenant or a connection. And a CI pipeline on GitHub Actions that, on every push, runs the linter (PSScriptAnalyzer) and the tests.
-
-Is it strictly necessary for a personal module? No. Is it how you work in a real environment, and what I want to show I can do? Yes.
-
-## The underlying idea
-
-If there's one thing I'm sure of, after coming through systems and security, it's that value isn't about doing more things, it's about **getting the repetitive stuff off your plate so you can spend your head on what actually matters**. Automating user onboarding isn't the goal; the goal is not having to think about it, so I can focus on what does need judgment.
-
-The code is on GitHub, with its README, examples and tests: **[M365-Admin-Toolkit](https://github.com/juanrc98/M365-Admin-Toolkit)**. It's the base of a toolbox I'll keep expanding — next up, bulk onboarding from CSV and a report of stale Intune devices.
-
-We keep building.
+Onward.
