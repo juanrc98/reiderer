@@ -21,8 +21,8 @@ const enHref = lang === 'en' ? home : altHref;
 const pageTitle = title ?? t.meta.title;
 const pageDesc = description ?? t.meta.description;
 // Imagen de compartir (Open Graph). Pon tu poster en public/og.jpg
-const ogImage = new URL('/og.jpg', Astro.site ?? 'https://reiderer.com').href;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://reiderer.com').href;
+const ogImage = new URL('/og.jpg', Astro.site ?? 'https://reiderer.dev').href;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://reiderer.dev').href;
 ---
 <!DOCTYPE html>
 <html lang={lang}>
@@ -92,7 +92,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://reiderer.co
 
   <main>
     <slot />
-  </main>
+  </main>cd
 
   <footer>reiderer<span class="c">_</span> · Córdoba, Andalucía · <span class="c">&copy;</span> 2026 Juan Rodríguez Castellano</footer>
 
