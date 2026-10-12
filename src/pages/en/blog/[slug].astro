@@ -1,4 +1,5 @@
 ---
+import { readingTime } from '../../../utils/readingTime';
 import Layout from '../../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
@@ -9,7 +10,7 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await entry.render();
-const date = entry.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+const date = readingTime(entry.body, 'en');
 
 // If the ES version of this post exists (same translationKey), the language switch points to it.
 let altHref = '/blog';

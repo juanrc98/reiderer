@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Home from '../components/Home.astro';
 import { getCollection } from 'astro:content';
+import { readingTime } from '../utils/readingTime';
 
 const posts = (await getCollection('blog', (p) => p.data.lang === 'es'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -12,7 +13,7 @@ const posts = (await getCollection('blog', (p) => p.data.lang === 'es'))
     description: p.data.description,
     category: p.data.category,
     accent: p.data.accent,
-    date: p.data.pubDate.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' }),
+    readTime: readingTime(p.body, 'es'),
   }));
 ---
 <Layout lang="es" altHref="/en">

@@ -1,7 +1,7 @@
 ---
 title: "From alert to ticket: connecting Wazuh to GLPI"
 description: 'A SIEM full of vulnerabilities with no owner protects nobody. Here is how I built an integration that turns the important Wazuh alerts into GLPI tickets, without duplicates and with least privilege.'
-pubDate: 2026-10-11
+pubDate: 2026-10-10
 lang: 'en'
 category: 'Blue Team'
 accent: 'blue'

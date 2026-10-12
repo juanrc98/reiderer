@@ -7,7 +7,7 @@ interface PostPreview {
   description: string;
   category: string;
   accent: 'blue' | 'red' | 'neutral';
-  date: string;
+  readTime: string;
 }
 
 interface Props {
@@ -25,10 +25,7 @@ const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b')
   <div class="wrap">
     <div class="hero-grid">
       <div>
-        <div class="pill-row reveal">
-          <span class="tagpill"><span class="sq"></span><span class="sq2"></span>{t.hero.pill}</span>
-          <a href="#contacto" class="status-pill"><span class="dot"></span>{t.hero.status}</a>
-        </div>
+        <span class="tagpill reveal"><span class="sq"></span><span class="sq2"></span>{t.hero.pill}</span>
         <p class="eyebrow reveal d1">{t.hero.eyebrow}</p>
         <h1 class="reveal d1">{t.hero.h1pre}<em>{t.hero.h1em}</em></h1>
         <p class="hero-role reveal d1">{t.hero.role} <b>{t.hero.roleAccent}</b></p>
@@ -123,7 +120,7 @@ const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b')
             <span class={`cat ${catClass(p.accent)}`}>{p.category}</span>
             <h3>{p.title}</h3>
             <p>{p.description}</p>
-            <div class="meta"><span>{p.date}</span><span class="go">{t.blogSection.read}</span></div>
+            <div class="meta"><span>{p.readTime}</span><span class="go">{t.blogSection.read}</span></div>
           </a>
         ))}
       </div>

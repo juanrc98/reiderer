@@ -1,4 +1,5 @@
 ---
+import { readingTime } from '../../utils/readingTime';
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
@@ -9,7 +10,7 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await entry.render();
-const date = entry.data.pubDate.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+const date = readingTime(entry.body, 'es');
 
 // Si existe la versión EN de este post (misma translationKey), el selector de idioma lleva a ella.
 let altHref = '/en/blog';
