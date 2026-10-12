@@ -25,7 +25,10 @@ const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b')
   <div class="wrap">
     <div class="hero-grid">
       <div>
-        <span class="tagpill reveal"><span class="sq"></span><span class="sq2"></span>{t.hero.pill}</span>
+        <div class="pill-row reveal">
+          <span class="tagpill"><span class="sq"></span><span class="sq2"></span>{t.hero.pill}</span>
+          <a href="#contacto" class="status-pill"><span class="dot"></span>{t.hero.status}</a>
+        </div>
         <p class="eyebrow reveal d1">{t.hero.eyebrow}</p>
         <h1 class="reveal d1">{t.hero.h1pre}<em>{t.hero.h1em}</em></h1>
         <p class="hero-role reveal d1">{t.hero.role} <b>{t.hero.roleAccent}</b></p>
@@ -55,6 +58,16 @@ const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b')
   </div>
 </header>
 
+<section id="cifras" class="metrics-section" aria-label={t.metrics.label}>
+  <div class="wrap">
+    <div class="metrics reveal">
+      {t.metrics.items.map((m) => (
+        <div class="metric"><div class="n">{m.n}</div><div class="l">{m.l}</div></div>
+      ))}
+    </div>
+  </div>
+</section>
+
 <section id="sobre">
   <div class="wrap about-grid">
     <div>
@@ -78,14 +91,18 @@ const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b')
     {t.projects.groups.map((g) => (
       <div class={`proj-group ${g.accent}`}>
         <div class="proj-group-title reveal"><span class="bar"></span>{g.title}</div>
-        <div class="cards">
+        <div class={`cards${g.cards.length % 2 === 0 ? ' cols-2' : ''}`}>
           {g.cards.map((c: any) => (
             <div class={`card${c.red ? ' red' : ''}${c.future ? ' future ' + c.future : ''} reveal`}>
               {c.label && <span class={`label${c.labelHot ? ' hot' : ''}`}>{c.label}</span>}
               <h3>{c.title}</h3>
+              {c.problem && <p class="problem"><span>{t.projects.problemLabel}</span>{c.problem}</p>}
               <p>{c.desc}</p>
+              {c.result && <p class="result"><span>{t.projects.resultLabel}</span>{c.result}</p>}
               <div class="tags">{c.tags.map((tg: string) => <span>{tg}</span>)}</div>
-              {c.href && <a href={c.href} target="_blank" rel="noopener">{c.link}</a>}
+              {c.href && (c.href.startsWith('http')
+                ? <a href={c.href} target="_blank" rel="noopener">{c.link}</a>
+                : <a href={c.href}>{c.link}</a>)}
             </div>
           ))}
         </div>
@@ -161,6 +178,19 @@ const catClass = (a: string) => (a === 'red' ? 'r' : a === 'neutral' ? '' : 'b')
           <h4>{c.name}</h4>
           <div class="iss">{c.iss}</div>
           {c.href && <a class="verify" href={c.href} target="_blank" rel="noopener">{t.certs.verify}</a>}
+        </div>
+      ))}
+    </div>
+    <div class="roadmap-title reveal"><span class="bar"></span>{t.certs.roadmapTitle}</div>
+    <div class="roadmap">
+      {t.certs.roadmap.map((r) => (
+        <div class="road reveal">
+          <div class="step">{r.step}</div>
+          <div>
+            <div class="badge">{r.badge}</div>
+            <h4>{r.name} <span>{r.iss}</span></h4>
+            <p>{r.p}</p>
+          </div>
         </div>
       ))}
     </div>
