@@ -1,6 +1,6 @@
 ---
 title: "144 vulnerabilidades en 3 horas: parchear navegadores en todo un dominio con GPO"
-description: 'El SIEM avisó de un CVE crítico de Chrome en buena parte del parque. En vez de un script de usar y tirar, la solución fue dejar que los navegadores se actualicen solos, controlados por GPO.'
+description: 'Wazuh se puso en rojo por un CVE crítico de Chrome en medio parque. Podía apagar el fuego con un script, pero preferí arreglar por qué se había encendido.'
 pubDate: 2026-10-12
 lang: 'es'
 category: 'Sistemas'
@@ -9,43 +9,34 @@ tags: ['Active Directory', 'GPO', 'ADMX', 'Wazuh', 'Gestión de vulnerabilidades
 translationKey: 'browsers-gpo'
 ---
 
-En un dominio de unos mil equipos Windows, el módulo de vulnerabilidades de Wazuh empezó a marcar en rojo un CVE crítico de Chrome (CVSS 9,6). No en un equipo: en una parte importante del parque. El navegador es la puerta más expuesta de cualquier puesto de trabajo, así que no era algo para dejar en la cola.
+Una mañana abrí el módulo de vulnerabilidades de Wazuh y me encontré un CVE crítico de Chrome (CVSS 9,6) repartido por buena parte de un dominio de unos mil equipos. No era un equipo suelto, eran muchísimos. Y el navegador es justo lo más expuesto que tiene cualquier usuario, así que eso no podía esperar en la cola.
 
-## La tentación del script
+Lo primero que se me pasó por la cabeza fue lo rápido: un script que descargue el instalador y lo lance en silencio en todos los equipos. Funcionaría, sí. Pero dentro de un mes sale otro CVE y vuelta a empezar, con un script más que mantener y que nadie sabe si sigue funcionando. Ahí me di cuenta de que el problema de verdad no era esa vulnerabilidad. Era que los navegadores **no se estaban actualizando solos**. Si arreglaba eso, arreglaba también las que todavía no se habían publicado.
 
-La primera idea que aparece siempre es la rápida: un script que descargue el instalador y lo ejecute en silencio en todos los equipos. Funciona. Una vez. El mes siguiente sale otro CVE y vuelves a estar en el mismo sitio, con un script que alguien tendrá que mantener y que nadie sabrá si sigue funcionando.
+## Que se actualicen solos, pero controlados
 
-El problema real no era *esta* vulnerabilidad. Era que los navegadores no se estaban actualizando solos. Si arreglas eso, arreglas también las vulnerabilidades que todavía no se han publicado.
+Chrome y Firefox publican sus plantillas administrativas oficiales (ADMX) para gestionarlos por GPO, así que tiré por ahí:
 
-## La solución: que el navegador se actualice solo, pero bajo control
+1. Copié las ADMX de Chrome, Google Update y Firefox, con sus ficheros de idioma, al almacén central de `PolicyDefinitions` en SYSVOL. Así cualquiera del equipo ve las mismas políticas desde su consola.
+2. Creé una GPO solo para esto. En Chrome forcé que las actualizaciones estén siempre permitidas y bajé el intervalo de comprobación a 240 minutos. En Firefox, actualización automática activada.
+3. En vez de aplicarla a todo el dominio de golpe, o de andar moviendo equipos de OU, la vinculé a la OU de equipos y la limité con filtrado de seguridad a un grupo pequeño de prueba.
+4. Y para saber si funcionaba, el propio Wazuh. El mismo panel que me había dado el susto me servía para medir la solución.
 
-Chrome y Firefox publican plantillas administrativas oficiales (ADMX) para gestionarlos por directiva de grupo. Con ellas, la actualización deja de depender de que el usuario reinicie el navegador o de que nadie haya bloqueado el servicio de actualización.
+En unas tres horas de piloto se cerraron **144 vulnerabilidades altas**. Con ese número delante, ampliar el filtro a *Equipos del dominio* no costó nada de justificar.
 
-1. **Cargar las plantillas en el almacén central.** Las ADMX de Chrome, Google Update y Firefox, con sus ADML de idioma, en `\\dominio\SYSVOL\dominio\Policies\PolicyDefinitions`. Así cualquier administrador ve las mismas políticas desde su consola.
-2. **Crear una GPO dedicada.** En Chrome, forzar que las actualizaciones estén siempre permitidas y reducir el intervalo de comprobación a 240 minutos. En Firefox, activar la actualización automática.
-3. **Pilotar con un grupo de seguridad.** En lugar de vincular la GPO a todo el dominio de golpe o mover equipos de OU, la vinculé a la OU de equipos y limité su alcance con el filtrado de seguridad a un grupo pequeño de prueba.
-4. **Medir en el SIEM.** Wazuh vuelve a inventariar el software de cada agente, así que el mismo panel que había dado la alarma servía para ver si el cambio funcionaba.
+## El susto de después
 
-## El resultado
-
-Durante el piloto, en unas tres horas se cerraron **144 vulnerabilidades de severidad alta**. Con ese dato encima de la mesa, ampliar el filtrado de seguridad a *Equipos del dominio* fue una decisión fácil de defender.
-
-## Lo que no salía en ningún tutorial
-
-Unos días después, el número de equipos vulnerables dejó de bajar. La GPO seguía existiendo, pero **su vínculo a la OU había desaparecido**. Active Directory no guarda histórico de cambios del atributo `gPLink` si no tienes la auditoría de cambios en servicios de directorio activada, así que no había forma de saber quién o qué lo quitó. Se restauró con PowerShell:
+A los pocos días vi que el número de equipos vulnerables se había quedado parado. La GPO seguía ahí, pero el **vínculo con la OU había desaparecido**. Sin más. Active Directory no guarda histórico de los cambios en `gPLink` si no tienes activada la auditoría de cambios del directorio, así que no hubo forma de saber quién ni qué lo quitó. Lo volví a vincular con PowerShell:
 
 ```powershell
 New-GPLink -Name "Actualizar navegadores" -Target "OU=Equipos,DC=lab,DC=local" -LinkEnabled Yes
 Get-GPInheritance -Target "OU=Equipos,DC=lab,DC=local"
 ```
 
-La lección me parece la más útil de todo el caso: **un control de seguridad que no se vigila acaba desapareciendo sin que nadie se entere**. Una comprobación periódica de que el vínculo sigue en su sitio, que abra un ticket si no, vale más que la propia GPO.
+Y para mí esto es lo más valioso de todo el caso, más que las 144 vulnerabilidades: un control de seguridad que nadie vigila puede desaparecer sin que nadie se entere. Me quedó pendiente montar una comprobación que avise con un ticket si el vínculo vuelve a irse, y sinceramente creo que vale más que la propia GPO.
 
 ## Lo que me llevo
 
-- Arreglar la causa (navegadores que no se actualizan) en vez del síntoma (un CVE concreto).
-- Pilotar con un grupo de seguridad: es reversible, medible y no obliga a mover nada.
-- Usar el mismo sistema que detecta el problema para medir la solución.
-- Activar la auditoría de cambios de AD *antes* de necesitarla.
+Que merece la pena pararse cinco minutos a pensar si estás arreglando la causa o solo el síntoma. Que pilotar con un grupo de seguridad es de las cosas más cómodas que hay: lo puedes medir, lo puedes deshacer y no tienes que mover nada de sitio. Y que la auditoría de cambios de AD hay que activarla antes de necesitarla, no después.
 
-*Caso real contado sin datos del entorno: nombres de dominio, OU y GPO cambiados.*
+*Caso real. He cambiado los nombres de dominio, OU y GPO.*

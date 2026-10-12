@@ -1,6 +1,6 @@
 ---
 title: "Migrar 3.600 usuarios de LDAP a SSO sin dejar a nadie fuera"
-description: 'Pasar una plataforma de formación de autenticación LDAP a Keycloak con OpenID Connect. Lo difícil no fue configurar el SSO, sino todo lo que lo rodea.'
+description: 'Pasar una plataforma de formación de LDAP a Keycloak con OpenID Connect. Configurar el SSO fue lo de menos; lo que me dio guerra fue todo lo que había alrededor.'
 pubDate: 2026-10-08
 lang: 'es'
 category: 'Sistemas'
@@ -9,42 +9,36 @@ tags: ['Keycloak', 'OIDC', 'Active Directory', 'Moodle', 'IAM']
 translationKey: 'ldap-sso'
 ---
 
-Una plataforma Moodle con **3.614 usuarios** autenticaba contra Active Directory por LDAP. El objetivo era pasarla a inicio de sesión único con Keycloak (OpenID Connect) sin que ningún usuario perdiera su cuenta, su historial ni sus cursos.
+Me tocó pasar un Moodle con **3.614 usuarios**, que autenticaba contra Active Directory por LDAP, a inicio de sesión único con Keycloak (OpenID Connect). La condición era que nadie perdiera su cuenta, su historial ni sus cursos. Sobre el papel parece sencillo. En la práctica, configurar el SSO fue lo de menos.
 
-## La regla de oro: no crear cuentas nuevas
+## Que no se duplique nadie
 
-El mayor riesgo de una migración a SSO es que el sistema no reconozca al usuario que vuelve y le cree una cuenta nueva y vacía. El alumno entra, ve cero cursos y abre una incidencia. Para evitarlo, la vinculación entre Keycloak y Moodle se hizo por `preferred_username`, que coincide con el usuario que ya existía en LDAP. Después, un cambio masivo de método de autenticación de `ldap` a `oidc` en las 3.614 cuentas.
+Lo que más miedo me daba era que, al entrar por SSO, Moodle no reconociera al usuario y le creara una cuenta nueva y vacía. El alumno entra, ve cero cursos y abre una incidencia. Multiplica eso por 3.600 y ya te imaginas.
+
+Para evitarlo vinculé Keycloak y Moodle por `preferred_username`, que coincide con el usuario que ya había en LDAP, y después cambié en bloque el método de autenticación de las 3.614 cuentas de `ldap` a `oidc`.
 
 ## Siempre una puerta de emergencia
 
-Si el SSO falla, nadie puede entrar, tampoco el administrador. Por eso:
+Si el SSO se cae, no entra nadie, y eso incluye al administrador. Así que antes de tocar nada dejé una cuenta de administrador local, con autenticación manual, que no depende de Keycloak, y comprobé que el login clásico seguía accesible con `?noredirect=1` aunque la redirección al SSO estuviera activada. Las dos cosas las probé antes del cambio. El día que te hacen falta no es momento de descubrir que no funcionan.
 
-- Una cuenta de administrador local (autenticación manual) que no depende de Keycloak.
-- El acceso al formulario de login clásico con `?noredirect=1` aunque la redirección automática al SSO esté activada.
+## Lo que no venía en ninguna guía
 
-Las dos cosas se probaron antes del cambio, no el día que hicieron falta.
+El login fallaba sin dar un error claro y tardé en ver por qué: Moodle tiene un cortafuegos interno que por defecto bloquea las peticiones a rangos privados como `10.0.0.0/8`, que es justo donde estaban Keycloak y LDAP.
 
-## Los problemas que no salen en la guía
+El acceso estaba limitado a un grupo de AD que, en vez de usuarios, contenía otros grupos. Un filtro `memberOf` normal no ve a los usuarios de los subgrupos, así que hubo que usar la regla de coincidencia recursiva de Active Directory, ese OID tan bonito que nadie se aprende:
 
-- **El cortafuegos interno de Moodle.** Moodle bloquea por defecto las peticiones a rangos privados como `10.0.0.0/8`, justo donde vivían Keycloak y LDAP. El login fallaba sin un error claro hasta que se revisó esa lista.
-- **Grupos anidados en AD.** El acceso estaba limitado a un grupo que contenía otros grupos, no usuarios. Un filtro `memberOf` normal no ve los usuarios de los subgrupos. Hace falta la regla de coincidencia recursiva de Active Directory:
+```
+(memberOf:1.2.840.113556.1.4.1941:=CN=App-Usuarios,OU=Grupos,DC=lab,DC=local)
+```
 
-  ```
-  (memberOf:1.2.840.113556.1.4.1941:=CN=App-Usuarios,OU=Grupos,DC=lab,DC=local)
-  ```
+La sincronización periódica con LDAP seguía dando de alta a los usuarios nuevos con autenticación `ldap`, así que metí un script en el cron que los pasa a `oidc` solo.
 
-- **Los usuarios nuevos.** La sincronización periódica desde LDAP seguía creando las altas nuevas con autenticación `ldap`. Un script en el cron las corrige automáticamente a `oidc`.
-- **El cron que no termina.** En Moodle 5.x, `admin/cli/cron.php` se queda en espera continua y no devuelve el control, así que cualquier tarea encadenada detrás nunca se ejecutaba. Se resolvió lanzando la corrección en paralelo.
+Y ese script no se ejecutaba nunca, porque en Moodle 5.x `admin/cli/cron.php` se queda esperando y no devuelve el control. Todo lo que iba detrás no llegaba a ejecutarse. Lo solucioné lanzándolo en paralelo.
 
-## El incidente que no era del SSO
+## El incidente que no era culpa del SSO
 
-Tras el cambio, un usuario no podía entrar ni a Moodle ni a otro portal interno. Todo apuntaba al SSO. La causa real: su portátil estaba conectado a la **red WiFi de invitados**, sin acceso a las subredes internas. Antes de culpar al último cambio, conviene comprobar lo básico.
+Después del cambio, un usuario no podía entrar ni a Moodle ni a otro portal interno. Todo apuntaba al SSO, que era lo último que habíamos tocado. Pues no: su portátil estaba conectado a la **WiFi de invitados**, sin acceso a las redes internas. Antes de echarle la culpa al último cambio, conviene mirar lo básico.
 
-## Lo que me llevo
+Lo bueno es que tres de estos problemas salieron en el entorno de pruebas, con una copia real de los datos, y no en producción. Ese entorno me ahorró más de un disgusto. Al final, en una migración de identidad el éxito no se mide en lo que funciona, sino en las cuentas que **no** se duplicaron.
 
-- En una migración de identidad, el éxito se mide en cuentas que **no** se duplicaron.
-- Probar la vía de emergencia antes de necesitarla.
-- Validar en un entorno de pruebas con una copia real de datos: tres de estos problemas aparecieron ahí y no en producción.
-- No todo lo que falla después de un cambio lo ha causado el cambio.
-
-*Caso real contado sin datos del entorno: nombres de grupos y dominios cambiados.*
+*Caso real contado sin datos del entorno. He cambiado los nombres de grupos y dominios.*

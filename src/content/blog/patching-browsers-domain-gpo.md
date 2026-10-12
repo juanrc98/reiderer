@@ -1,6 +1,6 @@
 ---
 title: "144 vulnerabilities in 3 hours: patching browsers across a whole domain with GPO"
-description: 'The SIEM flagged a critical Chrome CVE across much of the fleet. Instead of a throwaway script, the fix was to let browsers update themselves, controlled by GPO.'
+description: 'Wazuh lit up red over a critical Chrome CVE across half the fleet. I could have put out the fire with a script, but I preferred to fix why it had started.'
 pubDate: 2026-10-12
 lang: 'en'
 category: 'Systems'
@@ -9,43 +9,34 @@ tags: ['Active Directory', 'GPO', 'ADMX', 'Wazuh', 'Vulnerability management']
 translationKey: 'browsers-gpo'
 ---
 
-In a domain of about a thousand Windows devices, Wazuh's vulnerability module started flagging a critical Chrome CVE (CVSS 9.6). Not on one machine: across a large part of the fleet. The browser is the most exposed door on any workstation, so this wasn't something to leave in the queue.
+One morning I opened Wazuh's vulnerability module and found a critical Chrome CVE (CVSS 9.6) spread across a good chunk of a domain of about a thousand machines. Not one machine here and there, loads of them. And the browser is the most exposed thing any user has, so this couldn't sit in the queue.
 
-## The script temptation
+My first thought was the quick fix: a script that downloads the installer and runs it silently everywhere. It would work, sure. But a month later another CVE comes out and you're back where you started, with one more script to maintain that nobody knows is still working. That's when it clicked that the real problem wasn't that vulnerability. It was that browsers **weren't updating themselves**. Fix that, and you also fix the ones that haven't been published yet.
 
-The first idea is always the quick one: a script that downloads the installer and runs it silently on every machine. It works. Once. Next month another CVE comes out and you're back where you started, with a script someone has to maintain and nobody knows is still working.
+## Self-updating, but under control
 
-The real problem wasn't *this* vulnerability. It was that browsers weren't updating themselves. Fix that and you also fix the vulnerabilities that haven't been published yet.
+Chrome and Firefox publish official administrative templates (ADMX) to manage them through GPO, so that's the way I went:
 
-## The fix: browsers that update themselves, under control
+1. I copied the Chrome, Google Update and Firefox ADMX files, with their language files, into the central `PolicyDefinitions` store in SYSVOL. That way everyone on the team sees the same policies from their console.
+2. I created a GPO just for this. For Chrome, I forced updates to always be allowed and lowered the check interval to 240 minutes. For Firefox, automatic updates on.
+3. Instead of applying it to the whole domain at once, or shuffling computers between OUs, I linked it to the computers OU and scoped it with security filtering to a small test group.
+4. To know whether it worked, Wazuh itself. The same dashboard that had given me the scare was how I measured the fix.
 
-Chrome and Firefox publish official administrative templates (ADMX) to manage them through Group Policy. With them, updating no longer depends on users restarting the browser or on the update service not being blocked.
+In about three hours of pilot, **144 High vulnerabilities** were closed. With that number on the table, widening the filter to *Domain Computers* took no convincing at all.
 
-1. **Load the templates into the central store.** Chrome, Google Update and Firefox ADMX files, with their language ADML files, in `\\domain\SYSVOL\domain\Policies\PolicyDefinitions`. That way every admin sees the same policies from their console.
-2. **Create a dedicated GPO.** For Chrome, force updates to always be allowed and lower the check interval to 240 minutes. For Firefox, enable automatic updates.
-3. **Pilot with a security group.** Instead of linking the GPO to the whole domain at once or moving computers between OUs, I linked it to the computers OU and scoped it with security filtering to a small test group.
-4. **Measure in the SIEM.** Wazuh re-inventories each agent's software, so the same dashboard that raised the alarm showed whether the change was working.
+## The scare afterwards
 
-## The result
-
-During the pilot, **144 High-severity vulnerabilities were closed** in about three hours. With that number on the table, widening the security filter to *Domain Computers* was an easy decision to defend.
-
-## What no tutorial mentioned
-
-A few days later, the number of vulnerable devices stopped going down. The GPO still existed, but **its link to the OU was gone**. Active Directory doesn't keep a history of `gPLink` changes unless directory service change auditing is enabled, so there was no way to tell who or what removed it. It was restored with PowerShell:
+A few days later I noticed the number of vulnerable machines had stopped going down. The GPO was still there, but its **link to the OU was gone**. Just like that. Active Directory doesn't keep a history of `gPLink` changes unless you've turned on directory change auditing, so there was no way to find out who or what removed it. I linked it again with PowerShell:
 
 ```powershell
 New-GPLink -Name "Update browsers" -Target "OU=Computers,DC=lab,DC=local" -LinkEnabled Yes
 Get-GPInheritance -Target "OU=Computers,DC=lab,DC=local"
 ```
 
-That's the most useful lesson of the whole case: **a security control nobody watches eventually disappears without anyone noticing**. A periodic check that the link is still there, opening a ticket if it isn't, is worth more than the GPO itself.
+For me that's the most valuable part of the whole case, more than the 144 vulnerabilities: a security control nobody watches can disappear without anyone noticing. I was left with a to-do to build a check that opens a ticket if the link goes missing again, and honestly I think it's worth more than the GPO itself.
 
-## Takeaways
+## What I took from it
 
-- Fix the cause (browsers not updating) rather than the symptom (one specific CVE).
-- Pilot with a security group: reversible, measurable and nothing has to move.
-- Use the same system that detects the problem to measure the fix.
-- Turn on AD change auditing *before* you need it.
+That it's worth stopping for five minutes to ask whether you're fixing the cause or just the symptom. That piloting with a security group is about as comfortable as it gets: you can measure it, you can undo it and nothing has to move. And that AD change auditing needs turning on before you need it, not after.
 
-*Real case told without environment data: domain, OU and GPO names changed.*
+*Real case. Domain, OU and GPO names have been changed.*

@@ -1,6 +1,6 @@
 ---
 title: "The screen that ate 14 GB of RAM: debugging Xibo Player in C++"
-description: 'A digital signage screen that degraded every few hours. The cause was in the player code: a new video pipeline for every video, never released.'
+description: 'A digital signage screen that went black every few hours. I ended up reading the player’s C++ code, and there it was: one video pipeline per video, and none of them ever freed.'
 pubDate: 2026-10-11
 lang: 'en'
 category: 'Systems'
@@ -9,50 +9,41 @@ tags: ['Linux', 'C++', 'GStreamer', 'Xibo', 'Troubleshooting']
 translationKey: 'xibo-memory'
 ---
 
-A digital signage screen running Xibo Player on Linux worked fine after boot and, a few hours later, went black. Meanwhile the player process grew to **12-14 GB of memory** and the mini PC's CPU sat at **95-105 °C** all day, right at its thermal limit.
+We had a digital signage screen running Xibo Player on Linux that was fine after boot and, a few hours later, went black. When I looked into it, the player process was sitting at **12-14 GB of memory** and the mini PC's CPU spent all day between **95 and 105 °C**, right at its thermal limit. That wasn't going to end well.
 
-## Contain first
+First thing was keeping the screen working while I investigated. I moved the player to a `systemd --user` service with automatic restart and added a memory watchdog that restarted it above a threshold. That doesn't fix anything, it just buys time, but it let me hunt for the cause without anyone staring at a black screen.
 
-Before investigating anything, the screen had to keep working. The player was moved to a `systemd --user` service with automatic restart, and a small memory watchdog restarted it above a threshold. That's not a fix, it's a tourniquet: it buys time to find the real cause without anyone staring at a black screen.
+## Into the code
 
-## Read the code
+Xibo's Linux client is open source (C++, GTK and GStreamer) and the project has been archived for years, so no patch was coming from upstream. If I wanted it fixed, I had to do it myself.
 
-Xibo's Linux client is open source (C++, GTK and GStreamer) and the project has been archived for years, so no official patch was coming. Just rebuilding it on Ubuntu 24.04 was a job in itself: dependencies dropped by every distribution, an exact Boost version pinned, API changes in `fmt`, `sqlite_orm` and Boost.Beast, and a CMake `find_path` that mistook the `/usr/bin/date` binary for a header directory.
+Just getting it to build on Ubuntu 24.04 was an adventure: dependencies that no distribution ships anymore, an exact Boost version nobody packages, API changes in `fmt`, `sqlite_orm` and Boost.Beast... and my favourite, a CMake `find_path` looking for the `date` header that found the `/usr/bin/date` binary instead. The compiler error it threw had nothing to do with that. It took me a while.
 
-With the binary building, I read how a layout is put together:
+With the binary building I could finally read how it put a layout together, and there it was:
 
-- When a region loads, the player created **all** of its items at once.
-- For every video, the factory built its own `GstMediaPlayer`: a full GStreamer pipeline with its own OpenGL context.
-- When a video finished, only `stop()` was called. The object was never destroyed or removed from the widget tree.
+- When a region loaded, it created all of its items at once.
+- For every video it built its own `GstMediaPlayer`, meaning a full GStreamer pipeline with its own OpenGL context.
+- When a video finished, it only called `stop()`. The object was never destroyed.
 
-With 86 videos in the layout, there were **86 pipelines with their OpenGL contexts alive at the same time**. Memory and GPU drained little by little until something gave.
+The layout had 86 videos, so there were **86 pipelines with their OpenGL contexts alive at the same time**. Memory and GPU drained bit by bit until something blew.
 
 ## The fix
 
-A single player per region, shared by every video in that region. On each transition, only the new URI is loaded into the same pipeline. The region's first video creates the player and "owns" it; the rest reuse it.
+I changed the architecture so there's a single player per region, shared by all its videos. On each video change, only the new URI gets loaded into the same pipeline. The region's first video creates the player and the rest reuse it.
 
-## Deploy without fear
-
-Before touching production I prepared two things: a **tested rollback script** that restored the original binary in seconds, and a **memory monitor** every 5 minutes writing to a CSV. I validated first in a VM with a virtual display (`Xvfb`) and then on the real screen.
-
-## Result
+Before touching the real screen I had two things ready: a tested rollback script that restored the original binary in seconds, and a monitor logging memory every 5 minutes to a CSV. I tested first in a VM with a virtual display (`Xvfb`) and then on the real screen.
 
 | | Before | After |
 |---|---|---|
 | Player memory | 12-14 GB | 42-48 MB, stable |
 | CPU temperature | 95-105 °C | 61-63 °C |
 
-The fix ended up running on three devices, and the memory metric was wired into Zabbix with a custom item per device.
+In the end the fix ran on three machines, and each one's memory went into Zabbix with its own item.
 
-## What didn't work
+## What I couldn't fix
 
-On a device with a layout of almost 200 videos, a periodic crash showed up, roughly once an hour. I tried destroying the pipeline synchronously (worse: it blocked the only UI thread), deferring the release to the next event loop iteration, and forcing software decoding. None of the three fixed it. Since the automatic restart recovered it in seconds, it was accepted as a known, low-impact issue. Knowing when to stop digging is part of the job too.
+On a machine with a layout of almost 200 videos, a crash showed up roughly once an hour. I tried destroying the pipeline synchronously and it got worse, because it blocked the only UI thread. I tried deferring the release to the next event loop iteration, no luck. I tried forcing software decoding in case it was the driver, nothing. Since the automatic restart brought it back in seconds and you barely noticed, we left it as a known, low-impact issue. Letting it go was hard, honestly, but there's a point where digging further just isn't worth it.
 
-## Takeaways
-
-- Contain first, investigate later.
-- An archived project doesn't mean it can't be fixed: the code is right there.
-- No deployment without a tested rollback and a metric that tells you whether it worked.
-- Document the failed attempts too: they save hours for whoever comes next.
+A few things I'm keeping. Contain first, investigate later. An archived project doesn't mean it can't be fixed, the code is still there. Nothing goes to production without a tested rollback and a metric that tells you whether it worked. And write down what fails too, because you save whoever comes next a lot of hours.
 
 *Real case told without environment data.*

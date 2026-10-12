@@ -1,6 +1,6 @@
 ---
 title: "SIEM hygiene: cleaning up Wazuh without deleting what you shouldn't"
-description: 'A SIEM with ghost agents, alerts flooding the inbox and pending reboots nobody saw. Unglamorous maintenance that decides whether a SOC sees what matters.'
+description: 'Ghost agents, alert emails that weren’t alerts and pending reboots nobody saw. The maintenance that doesn’t look good on a slide but decides whether you see what matters.'
 pubDate: 2026-10-07
 lang: 'en'
 category: 'Blue Team'
@@ -9,43 +9,34 @@ tags: ['Wazuh', 'SIEM', 'Active Directory', 'Zabbix', 'SOC']
 translationKey: 'siem-hygiene'
 ---
 
-Nobody writes a post about cleaning up their SIEM inventory. But a noisy SIEM has the same effect as one with no alerts: what matters gets lost. These are the maintenance tasks that made the biggest difference in a Wazuh deployment of about a thousand agents.
+This isn't the flashiest thing I've done, but I think it's among the most useful. A SIEM full of noise ends up as useless as one with no alerts, because what matters gets lost among everything else. These are the maintenance tasks that made the biggest difference on a Wazuh with about a thousand agents.
 
-## 1. Ghost agents: double verification
+## Ghost agents
 
-The inventory had **105 agents** that had been disconnected for months. Deleting them all at once was easy, but a disconnected agent isn't necessarily a retired device: it might be in a drawer, on holiday or have a broken service. The decommissioning criteria ended up as:
-
-1. User devices only, never servers.
-2. More than 90 days without contacting the manager.
-3. Computer account **disabled in Active Directory**, checked with PowerShell:
+The inventory had **105 agents** that hadn't connected in months. Deleting them all would have taken a minute, but a disconnected agent isn't necessarily a retired machine. It could be in a drawer, with someone on holiday or with a broken service. So I set myself some criteria before deleting anything: user devices only (servers off limits), more than 90 days without contacting the manager, and the computer account **disabled in Active Directory**. That last one I checked like this:
 
 ```powershell
 Get-ADComputer -Identity PC-EXAMPLE -Properties Enabled, LastLogonDate | Select-Object Name, Enabled, LastLogonDate
 ```
 
-Of 105 candidates, **only 3** passed both checks. The other 102 were still enabled in AD. Those were left alone and went on to be cross-checked against the GLPI inventory. Deleting 105 agents would have made 102 possibly active devices vanish from the SIEM.
+Of the 105, only **3** ticked every box. The other 102 were still enabled in AD, so I left them alone and they went on the list to cross-check against GLPI. If I'd trusted Wazuh alone, I'd have made 102 machines vanish from the SIEM that might well still be in use.
 
-## 2. A rule flooding the inbox
+## The rule filling the inbox
 
-Wazuh rule 204 (agent event queue flooded) was at level 12, the same threshold that triggered emails. The result: dozens of agent health emails mixed in with real alerts. It was lowered to level 7 by copying the original rule into `local_rules.xml` with `overwrite="yes"` and changing only its `level` attribute, without touching the vendor rule files, which get overwritten on every upgrade. It's still visible on the dashboard, but no longer competes in the inbox with what matters.
+Wazuh rule 204, the one for a flooded agent event queue, was at level 12. And from 12 up, emails went out, so the inbox was full of agent health notices mixed in with real alerts. I lowered it to level 7 by copying the original rule into `local_rules.xml` with `overwrite="yes"` and changing only the level, without touching Wazuh's own rule files, which get overwritten on every upgrade. It still shows on the dashboard, but it doesn't make noise in the inbox anymore.
 
-## 3. The false positive that was Outlook
+## When the problem was Outlook
 
-"Wazuh emails aren't arriving" sounded like a mail server problem. Postfix logs showed successful delivery to the relay the whole time. The cause: the Outlook folder where alerts were filed had stopped syncing. **Checking every hop** before changing configuration saves you from breaking something that worked.
+One day I was told Wazuh emails weren't arriving. It sounded like a mail server problem, but before touching anything I checked the Postfix logs and delivery to the relay was fine the whole time. The problem was that the Outlook folder where the alerts were filed had stopped syncing. Good thing I didn't start changing configs blindly, because I'd have broken something that was working.
 
-## 4. What the SIEM sees and nobody looked at
+## What the SIEM sees and nobody looks at
 
-Wazuh's inventory shows things that aren't alerts, too. Several Linux servers had a new kernel installed but were still running an old one: **accumulated pending reboots** and, with them, security patches that weren't active. Installing isn't patching until you reboot.
+Wazuh's inventory also shows things that never fire as alerts. Going through it, I saw several Linux servers had a new kernel installed but were still running an old one. They were piled-up pending reboots and, with them, security patches that weren't actually applied. Installing a patch doesn't do much until you reboot.
 
-## 5. Same story in monitoring
+## And in Zabbix, same thing
 
-Zabbix had something similar: hosts down for months or years, triggers on empty switch ports, and memory thresholds firing on normal cache behavior. The plan went in order: disable zombie hosts, turn off triggers for unused interfaces, recalibrate thresholds, and review every disk alert by hand.
+Monitoring had something very similar going on: hosts down for months or years, triggers on empty switch ports, and memory thresholds firing on normal cache usage. I tackled it in parts. First I disabled the zombie hosts, then removed triggers for unused interfaces, then recalibrated thresholds and, finally, went through the disk alerts one by one.
 
-## Takeaways
-
-- **Never delete based on a single source of truth.** Cross-checking SIEM and AD avoided a big mistake.
-- Lowering a rule's severity isn't hiding it: it's routing it to the right channel.
-- Before "fixing" a failure, find where the chain of truth actually breaks.
-- The SIEM inventory is a vulnerability management tool, not just a list of agents.
+If I had to keep just one idea, it'd be never to delete anything based on a single source. Cross-checking Wazuh with AD saved me from making a real mess.
 
 *Real case told without environment data.*
